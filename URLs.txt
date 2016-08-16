@@ -1,0 +1,4 @@
+http://tech.thejoestory.com/2014/12/yahoo-fantasy-football-api-using-python.html
+https://developer.yahoo.com/yql/console/
+https://developer.yahoo.com/fantasysports/guide/#sample-xml=
+https://pypi.python.org/pypi/oauthlib
