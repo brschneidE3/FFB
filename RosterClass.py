@@ -48,29 +48,26 @@ class Roster:
 
     def calc_weekly_performance(self, players):
         """
-        weekly_performance = {'QB': {1:  w1_points, ..., 17: w17_points}, ...
-                               'D': {1:  w1_points, ..., 17: w17_points}
+        weekly_performance = {'QB': {1:  w1_points, ..., 17: w17_points}, ..
+                               'D': {1:  w1_points, ..., 17: w17_points}.
                               }
         """
         weekly_points = self.weekly_points(players)
         weekly_performance = {}
-        for pos in self.starting_pos:
+        for pos in self.starting_pos.keys():
             weekly_performance[pos] = {}
             num_pos_on_roster = len(weekly_points[pos][1])
-            pos_needed = self.starting_pos[pos]
-            if num_pos_on_roster >= pos_needed:
-                for week in range(1, 18):
-                    weekly_performance[pos][week] = sum(weekly_points[pos][week][:num_pos_on_roster])
-            else:
-                for week in range(1, 18):
-                    weekly_performance[pos][week] = 0
+            for week in range(1, 18):
+                weekly_performance[pos][week] = sum(weekly_points[pos][week][:num_pos_on_roster])
+
         return weekly_performance
 
-    def get_team_projection(self):
+    def get_team_projection(self, players):
         """
         Returns season points projection
         """
-        team_projection = sum([sum(self.weekly_performance[pos].values()) for pos in self.weekly_performance.keys()])
+        weekly_performance = self.calc_weekly_performance(players)
+        team_projection = sum([sum(weekly_performance[pos].values()) for pos in weekly_performance.keys()])
         return team_projection
 
     @staticmethod
