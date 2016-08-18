@@ -3,6 +3,8 @@ __author__ = 'brendan'
 import operator
 import beesh
 
+# list_of_positions = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF', 'D']
+list_of_positions = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF', 'D', 'DB']
 
 class Draft:
 
@@ -70,7 +72,6 @@ class Draft:
                     top_additions[pos][i] = (0, 'N/A')
                 except IndexError:
                     top_additions[pos][i] = (0, 'N/A')
-
         return top_additions
 
     def show_top_n_additions(self, additions_to_calc, additions_to_show):
@@ -83,9 +84,11 @@ class Draft:
         for i in range(additions_to_show):
             new_row = [i]
             for pos in list_of_positions:
+
                 if i == 0:
                     new_row.append('%s - %s' % (top_n_additions[pos][i][1], top_n_additions[pos][i][0]))
                 else:
+                    # print top_n_additions[pos][i][1], top_n_additions[pos][i-1][0]
                     new_row.append('%s (%s) - %s' % (top_n_additions[pos][i][1],
                                                      top_n_additions[pos][i][1] - top_n_additions[pos][i-1][1],
                                                      top_n_additions[pos][i][0]))

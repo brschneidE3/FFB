@@ -12,4 +12,4 @@ import DraftClass
 draft = DraftClass.Draft(available_players, roster)
 
 top_dict = draft.show_top_n_additions(additions_to_calc=100,
-                                               additions_to_show=10)
+                                      additions_to_show=15)
