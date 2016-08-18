@@ -3,7 +3,6 @@ __author__ = 'brendan'
 import operator
 import beesh
 
-list_of_positions = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF']
 
 class Draft:
 
