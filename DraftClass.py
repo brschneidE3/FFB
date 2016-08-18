@@ -3,6 +3,8 @@ __author__ = 'brendan'
 import operator
 import beesh
 
+list_of_positions = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF']
+
 class Draft:
 
     def __init__(self, available_players, roster):
@@ -47,12 +49,12 @@ class Draft:
         # Create dict of players sorted by season projection
         sorted_pos = {}
         # for pos in self.roster.starting_pos:
-        for pos in ['QB', 'RB']:
+        for pos in list_of_positions:
             sorted_pos[pos] = sorted(self.available_players[pos].items(), key=operator.itemgetter(1), reverse=True)
 
         top_additions = {}
         # for pos in self.roster.starting_pos:
-        for pos in ['QB', 'RB']:
+        for pos in list_of_positions:
             top_additions[pos] = {}
             additions = []
             for player_pts_tuple in sorted_pos[pos][:n]:  # Take the top n performers in each position
@@ -75,13 +77,21 @@ class Draft:
     def show_top_n_additions(self, additions_to_calc, additions_to_show):
 
         top_n_additions = self.top_n_additions(additions_to_calc)
+        top_dict = {}
 
         table = []
 
         for i in range(additions_to_show):
             new_row = [i]
-            for pos in top_n_additions.keys():
-                new_row.append('%s - %s' % (top_n_additions[pos][i][1], top_n_additions[pos][i][0]))
+            for pos in list_of_positions:
+                if i == 0:
+                    new_row.append('%s - %s' % (top_n_additions[pos][i][1], top_n_additions[pos][i][0]))
+                else:
+                    new_row.append('%s (%s) - %s' % (top_n_additions[pos][i][1],
+                                                     top_n_additions[pos][i][1] - top_n_additions[pos][i-1][1],
+                                                     top_n_additions[pos][i][0]))
+            top_dict[(i, pos)] = top_n_additions[pos][i][0]
             table.append(new_row)
 
-        beesh.PrintTabularResults(top_n_additions.keys(), table)
+        beesh.PrintTabularResults(list_of_positions, table)
+        return top_dict

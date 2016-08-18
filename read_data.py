@@ -4,6 +4,7 @@ import os
 import beesh
 import PlayerClass
 import RosterClass
+import DraftClass
 
 data_dir = os.getcwd()
 
@@ -12,7 +13,7 @@ def read():
 
     available_players = {}
 
-    for pos in ['QB', 'RB']:
+    for pos in DraftClass.list_of_positions:
         pos_file = '%s.csv' % pos
         available_players[pos] = {}
         data_list = beesh.csv_to_list(data_dir, pos_file, 1, 0)

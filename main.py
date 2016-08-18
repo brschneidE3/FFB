@@ -11,6 +11,5 @@ roster = RosterClass.Roster()
 import DraftClass
 draft = DraftClass.Draft(available_players, roster)
 
-avail_player_dict = draft.show_available_players()
-draft.show_top_n_additions(additions_to_calc=100,
-                           additions_to_show=100)
+top_dict = draft.show_top_n_additions(additions_to_calc=100,
+                                               additions_to_show=10)
