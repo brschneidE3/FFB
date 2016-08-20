@@ -54,46 +54,104 @@ class Draft:
             sorted_pos[pos] = sorted(self.available_players[pos].items(), key=operator.itemgetter(1), reverse=True)
 
         top_additions = {}
-        # for pos in self.roster.starting_pos:
         for pos in list_of_positions:
-            top_additions[pos] = {}
+
             additions = []
-            for player_pts_tuple in sorted_pos[pos][:n]:  # Take the top n performers in each position
+            for i in range(len(sorted_pos[pos])):  # Take the top n performers in each position
+                player_pts_tuple = sorted_pos[pos][i]
                 roster_players_plus_player = self.roster.players + [player_pts_tuple[0]]
                 team_projection = self.roster.get_team_projection(roster_players_plus_player)
                 improvement = int(team_projection - current_performance)
                 additions.append((improvement, player_pts_tuple[0]))
+                if pos in ['QB', 'TE', 'K', 'DEF', 'DB']:
+                    for second_player_pts_tuple in sorted_pos[pos][i+1:]:
+                        if second_player_pts_tuple is player_pts_tuple:
+                            pass
+                        else:
+                            second_roster_players_plus_player = self.roster.players + [player_pts_tuple[0],
+                                                                                       second_player_pts_tuple[0]]
+                            second_team_projection = self.roster.get_team_projection(second_roster_players_plus_player)
+                            second_improvement = int(second_team_projection - current_performance)
+                            additions.append((second_improvement, player_pts_tuple[0], second_player_pts_tuple[0]))
+
             sorted_additions = sorted(additions, reverse=True)
 
+            top_additions[pos] = {}
             for i in range(n):
                 try:
-                    top_additions[pos][i] = (sorted_additions[i][1], sorted_additions[i][0])
+                    if len(sorted_additions[i]) == 3:
+                        top_additions[pos][i] = (sorted_additions[i][1], sorted_additions[i][2], sorted_additions[i][0])
+                    else:
+                        top_additions[pos][i] = (sorted_additions[i][1], sorted_additions[i][0])
                 except KeyError:
-                    top_additions[pos][i] = (0, 'N/A')
+                    top_additions[pos][i] = ('N/A', 0)
                 except IndexError:
-                    top_additions[pos][i] = (0, 'N/A')
+                    top_additions[pos][i] = ('N/A', 0)
         return top_additions
 
-    def show_top_n_additions(self, additions_to_calc, additions_to_show):
+    def top_additions(self):
+        current_performance = self.roster.get_team_projection(self.roster.players)
+        singles = {pos: {} for pos in list_of_positions}
+        combos = {pos: {} for pos in list_of_positions}
+        everyone = {pos: {} for pos in list_of_positions}
+        pos_for_combos = ['QB', 'TE', 'K', 'DEF', 'DB']
+        for pos in list_of_positions:
+            for i in range(len(self.available_players[pos].keys())):
+                player = self.available_players[pos].keys()[i]
+                roster_plus_player = self.roster.players + [player]
+                singles[pos][(player)] = self.roster.get_team_projection(roster_plus_player) - current_performance
+                everyone[pos][(player)] = self.roster.get_team_projection(roster_plus_player) - current_performance
 
-        top_n_additions = self.top_n_additions(additions_to_calc)
-        top_dict = {}
+                if pos in pos_for_combos:
+                    for j in range(i+1, len(self.available_players[pos].keys())):
+                        second_player = self.available_players[pos].keys()[j]
+                        if second_player != player:
+                            roster_plus_second_player = roster_plus_player + [second_player]
+                            combos[pos][(player, second_player)] = \
+                                self.roster.get_team_projection(roster_plus_second_player) - current_performance
+                            everyone[pos][(player, second_player)] = \
+                                self.roster.get_team_projection(roster_plus_second_player) - current_performance
 
+        best_players = {}
+        for pos in list_of_positions:
+            sorted_singles = sorted(singles[pos].items(), key=operator.itemgetter(1), reverse=True)
+            best_player = sorted_singles[0][0]
+            best_players[pos] = best_player
+
+        top_additions = {}
+        for pos in list_of_positions:
+            top_additions[pos] = {}
+            rank = 0
+            for tup in sorted(everyone[pos].items(), key=operator.itemgetter(1), reverse=True):
+                try:
+                    if best_players[pos] in tup[0]:
+                        del everyone[pos][tup[0]]
+                    else:
+                        top_additions[pos][rank] = (list(tup[0]), tup[1])
+                        rank += 1
+                except TypeError:
+                    top_additions[pos][rank] = ([tup[0]], tup[1])
+                    rank += 1
+        return top_additions
+
+
+    def show_top_additions(self, n):
+
+        top_additions = self.top_additions()
         table = []
+        max_rank = max(len(top_additions[pos].keys()) for pos in top_additions.keys())
 
-        for i in range(additions_to_show):
+        for i in range(max_rank):
             new_row = [i]
             for pos in list_of_positions:
+                try:
+                    performance = int(top_additions[pos][i][1])
+                    performance_above_best = int(performance - top_additions[pos][0][1])
+                    players = top_additions[pos][i][0]
+                    new_row.append('%s (%s) - %s' % (performance, performance_above_best, tuple(players)))
 
-                if i == 0:
-                    new_row.append('%s - %s' % (top_n_additions[pos][i][1], top_n_additions[pos][i][0]))
-                else:
-                    # print top_n_additions[pos][i][1], top_n_additions[pos][i-1][0]
-                    new_row.append('%s (%s) - %s' % (top_n_additions[pos][i][1],
-                                                     top_n_additions[pos][i][1] - top_n_additions[pos][i-1][1],
-                                                     top_n_additions[pos][i][0]))
-            top_dict[(i, pos)] = top_n_additions[pos][i][0]
+                except KeyError:
+                    new_row.append('')
             table.append(new_row)
-
-        beesh.PrintTabularResults(list_of_positions, table)
-        return top_dict
+        beesh.PrintTabularResults([''] + list_of_positions, table)
+        print [''] + list_of_positions

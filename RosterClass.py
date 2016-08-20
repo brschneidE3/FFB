@@ -15,6 +15,23 @@ class Roster:
         'DB': 1,
     }
 
+    weeks = {1: 1,  # Includes weightings for each week
+             2: 1,
+             3: 1,
+             4: 1,
+             5: 1,
+             6: 1,
+             7: 1,
+             8: 1,
+             9: 1,
+             10: 1,
+             11: 1,
+             12: 1,
+             13: 1,
+             14: 1,
+             15: 1,
+             16: 1}
+
     def __init__(self):
 
         self.players = []
@@ -35,13 +52,13 @@ class Roster:
                                 17: [p1 points, p2 points, ..., pN points]}
                         }
         """
-        weekly_points = {pos: {week: [] for week in range(1, 18)} for pos in self.starting_pos}
+        weekly_points = {pos: {week: [] for week in self.weeks.keys()} for pos in self.starting_pos}
         for player in players:
-            for week in range(1, 18):
-                weekly_points[player.pos][week].append(player.points[week])
+            for week in self.weeks.keys():
+                weekly_points[player.pos][week].append(player.points[week]*self.weeks[week])
 
         for pos in weekly_points.keys():
-            for week in range(1, 18):
+            for week in self.weeks.keys():
                 weekly_points[pos][week] = sorted(weekly_points[pos][week], reverse=True)
 
         return weekly_points
@@ -56,10 +73,10 @@ class Roster:
         weekly_performance = {}
         for pos in self.starting_pos.keys():
             weekly_performance[pos] = {}
-            num_pos_on_roster = len(weekly_points[pos][1])
-            for week in range(1, 18):
-                weekly_performance[pos][week] = sum(weekly_points[pos][week][:num_pos_on_roster])
-
+            # num_pos_on_roster = len(weekly_points[pos][1])
+            num_starters = self.starting_pos[pos]
+            for week in self.weeks.keys():
+                weekly_performance[pos][week] = sum(weekly_points[pos][week][:num_starters])
         return weekly_performance
 
     def get_team_projection(self, players):
@@ -70,13 +87,12 @@ class Roster:
         team_projection = sum([sum(weekly_performance[pos].values()) for pos in weekly_performance.keys()])
         return team_projection
 
-    @staticmethod
-    def show_weekly_performance(weekly_performance):
+    def show_weekly_performance(self, weekly_performance):
         table = []
         for pos in ['QB', 'RB', 'WR', 'TE', 'K', 'DEF', 'D', 'DB']:
             new_row = [pos]
-            for i in range(1, 18):
+            for i in self.weeks.keys():
                 new_row.append(weekly_performance[pos][i])
             new_row.append(sum(new_row[1:]))
             table.append(new_row)
-        beesh.PrintTabularResults([''] + ['week%s' % i for i in range(1, 18)] + ['total'], table)
+        beesh.PrintTabularResults([''] + ['week%s' % i for i in self.weeks.keys()] + ['total'], table)
