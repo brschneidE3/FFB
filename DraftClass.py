@@ -113,10 +113,12 @@ class Draft:
                                 self.roster.get_team_projection(roster_plus_second_player) - current_performance
 
         best_players = {}
+        sorted_indiv = {}
         for pos in list_of_positions:
             sorted_singles = sorted(singles[pos].items(), key=operator.itemgetter(1), reverse=True)
             best_player = sorted_singles[0][0]
             best_players[pos] = best_player
+            sorted_indiv[pos] = sorted_singles
 
         top_additions = {}
         for pos in list_of_positions:
@@ -132,17 +134,21 @@ class Draft:
                 except TypeError:
                     top_additions[pos][rank] = ([tup[0]], tup[1])
                     rank += 1
-        return top_additions
+        return top_additions, sorted_indiv
 
 
-    def show_top_additions(self, n):
+    def show_top_additions(self, n=10):
 
-        top_additions = self.top_additions()
+        top_additions, sorted_singles = self.top_additions()
         table = []
+        top_table = []
         max_rank = max(len(top_additions[pos].keys()) for pos in top_additions.keys())
 
         for i in range(max_rank):
             new_row = [i]
+            if i < n:
+                new_top_row = [i]
+
             for pos in list_of_positions:
                 try:
                     performance = int(top_additions[pos][i][1])
@@ -152,6 +158,26 @@ class Draft:
 
                 except KeyError:
                     new_row.append('')
+
+                if i < n:
+                    try:
+                        top_player, top_performance = sorted_singles[pos][i]
+                        top_above_best = top_performance - sorted_singles[pos][0][1]
+                        new_top_row.append('%s (%s) - %s' % (top_performance, top_above_best, top_player))
+                    except KeyError:
+                        new_top_row.append('')
+
+            if i < n:
+                top_table.append(new_top_row)
+            if (i+1) % 3 == 0 and 0 < i < n:
+                top_table.append(['' for element in new_top_row])
             table.append(new_row)
-        beesh.PrintTabularResults([''] + list_of_positions, table)
-        print [''] + list_of_positions
+
+        print "~~~~~~~~~~~~~~~~ THE BOARD ~~~~~~~~~~~~~~~~"
+        beesh.PrintTabularResults([''] + list_of_positions, table[::-1])
+        print '\n'
+
+        print "~~~~~~~~~~~~~~~~ TOP %s ~~~~~~~~~~~~~~~~" % n
+        beesh.PrintTabularResults([''] + list_of_positions, top_table)
+        print '\n'
+        return top_additions
