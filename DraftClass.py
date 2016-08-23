@@ -114,11 +114,25 @@ class Draft:
 
         best_players = {}
         sorted_indiv = {}
+        next_best_combo = {}
         for pos in list_of_positions:
             sorted_singles = sorted(singles[pos].items(), key=operator.itemgetter(1), reverse=True)
             best_player = sorted_singles[0][0]
+            best_player_value = sorted_singles[0][1]
             best_players[pos] = best_player
             sorted_indiv[pos] = sorted_singles
+            sorted_combos = sorted(combos[pos].items(), key=operator.itemgetter(1), reverse=True)
+            last_combo = None
+            for combo in sorted_combos:
+                value = combo[1]
+                if value > best_player_value and best_player not in combo[0]:
+                    last_combo = combo[1]  # TODO: update with average draft pick
+                elif value > best_player_value:
+                    pass
+                else:
+                    break
+            next_best_combo[pos] = last_combo
+
 
         top_additions = {}
         for pos in list_of_positions:
@@ -134,12 +148,12 @@ class Draft:
                 except TypeError:
                     top_additions[pos][rank] = ([tup[0]], tup[1])
                     rank += 1
-        return top_additions, sorted_indiv
+        return top_additions, sorted_indiv, next_best_combo
 
 
     def show_top_additions(self, n=10):
 
-        top_additions, sorted_singles = self.top_additions()
+        top_additions, sorted_singles, next_best_combo = self.top_additions()
         table = []
         top_table = []
         max_rank = max(len(top_additions[pos].keys()) for pos in top_additions.keys())
@@ -154,7 +168,7 @@ class Draft:
                     performance = int(top_additions[pos][i][1])
                     performance_above_best = int(performance - top_additions[pos][0][1])
                     players = top_additions[pos][i][0]
-                    new_row.append('%s (%s) - %s' % (performance, performance_above_best, tuple(players)))
+                    new_row.append('%s - %s' % (performance_above_best, tuple(players)))
 
                 except KeyError:
                     new_row.append('')
@@ -163,7 +177,10 @@ class Draft:
                     try:
                         top_player, top_performance = sorted_singles[pos][i]
                         top_above_best = top_performance - sorted_singles[pos][0][1]
-                        new_top_row.append('%s (%s) - %s' % (top_performance, top_above_best, top_player))
+                        if i == 0:
+                            new_top_row.append('%s - %s (%s)' % (top_performance, top_player, next_best_combo[pos]))
+                        else:
+                            new_top_row.append('%s - %s' % (top_above_best, top_player))
                     except KeyError:
                         new_top_row.append('')
 
