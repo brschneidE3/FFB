@@ -17,7 +17,7 @@ class Player:
         for i in range(len(list_of_points)):
             week = i+1
             points = list_of_points[i]
-            if points == '-':
+            if points == '':
                 self.bye_week = week
                 points = 0.
             else:

@@ -18,8 +18,9 @@ def add_player(roster, draft, pos_to_add):
         addable_players = sorted(draft.available_players[pos_to_add].items(), key=operator.itemgetter(1), reverse=True)
         player_dict = {}
         for i in range(len(addable_players)):
-            player_dict[i] = addable_players[i][0]
-            print i, player_dict[i]
+            j = len(addable_players) - i - 1
+            player_dict[j] = addable_players[j][0]
+            print j, player_dict[j]
 
         try:
             i_player = int(raw_input('Enter number beside player to DRAFT: '))
@@ -52,8 +53,9 @@ def remove_player(roster, draft, pos_to_remove):
             sorted(draft.available_players[pos_to_remove].items(), key=operator.itemgetter(1), reverse=True)
         player_dict = {}
         for i in range(len(removable_players)):
-            player_dict[i] = removable_players[i][0]
-            print i, player_dict[i]
+            j = len(removable_players) - i - 1
+            player_dict[j] = removable_players[j][0]
+            print j, player_dict[j]
 
         try:
             i_player = int(raw_input('Enter number beside player to REMOVE: '))
@@ -78,7 +80,7 @@ def remove_player(roster, draft, pos_to_remove):
 status = 'drafting'
 while status is 'drafting':
 
-    top_additions = draft.show_top_additions()
+    top_additions = draft.show_top_additions(20)
     command = raw_input('Options: draft(POS), remove(POS), done: ')
 
     if 'draft' in command:
