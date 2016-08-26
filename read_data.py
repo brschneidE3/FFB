@@ -3,7 +3,6 @@ __author__ = 'brendan'
 import os
 import beesh
 import PlayerClass
-import RosterClass
 import DraftClass
 
 data_dir = os.getcwd()
@@ -27,7 +26,7 @@ def read():
                 team, pos_string = team_pos_string.rsplit(' - ')
 
                 position = pos_string
-                player = PlayerClass.Player(name, team, position, row[1:])
+                player = PlayerClass.Player(name, team, position, row[1:18], row[18])
 
                 available_players[position][player] = player.total
 
@@ -41,12 +40,12 @@ def read():
                     team, pos_string = team_pos_string.rsplit(' - ')
 
                     position = 'D'
-                    player = PlayerClass.Player(name, team, position, row[1:])
+                    player = PlayerClass.Player(name, team, position, row[1:18])
                     available_players[position][player] = player.total
 
                     if 'S' in pos_string or 'CB' in pos_string:
                         new_position = 'DB'
-                        new_player = PlayerClass.Player(name, team, new_position, row[1:])
+                        new_player = PlayerClass.Player(name, team, new_position, row[1:18])
                         available_players['DB'][new_player] = new_player.total
                 except ValueError:
                     print row

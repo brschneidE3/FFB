@@ -7,13 +7,15 @@ class Player:
                  name,
                  team,
                  pos,
-                 list_of_points):
+                 list_of_points,
+                 avg_pick):
 
         self.name = name
         self.team = team
-        self.pos = pos
+        self.position = pos
         self.points = {}
         self.bye_week = None
+        self.avg_pick = float(avg_pick)
         for i in range(len(list_of_points)):
             week = i+1
             points = list_of_points[i]

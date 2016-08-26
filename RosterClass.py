@@ -1,6 +1,7 @@
 __author__ = 'brendan'
 
 import beesh
+import bisect
 
 class Roster:
 
@@ -33,62 +34,44 @@ class Roster:
              16: 1,
              17: 1}
 
-    def __init__(self):
+    def __init__(self, players=None):
 
-        self.players = []
+        self.players = players if players is not None else []
+        self.performance = self.get_projection()
 
-    def add_player(self, player):
-        """
-        Add a player to self.players and update self.positions
-        """
-        self.players.append(player)
-        self.weekly_performance = self.calc_weekly_performance(players=self.players)
+    def calc_weekly_performance(self):
 
-    def weekly_points(self, players):
-        """
-        weekly_points = {'QB': {1:  [p1 points, p2 points, ..., pN points], ...
-                                17: [p1 points, p2 points, ..., pN points]},
-                         ...
-                         'D': {1:  [p1 points, p2 points, ..., pN points], ...
-                                17: [p1 points, p2 points, ..., pN points]}
-                        }
-        """
+        # weekly_points = {'QB': {1:  [p1 points, p2 points, ..., pN points], ...
+        #                         17: [p1 points, p2 points, ..., pN points]},
+        #                  ...
+        #                  'D': {1:  [p1 points, p2 points, ..., pN points], ...
+        #                         17: [p1 points, p2 points, ..., pN points]}
+        #                 }
         weekly_points = {pos: {week: [] for week in self.weeks.keys()} for pos in self.starting_pos}
-        for player in players:
+        for player in self.players:
             for week in self.weeks.keys():
-                weekly_points[player.pos][week].append(player.points[week]*self.weeks[week])
-
-        for pos in weekly_points.keys():
+                weekly_points[player.position][week].append(player.points[week]*self.weeks[week])
+        for position in weekly_points.keys():
             for week in self.weeks.keys():
-                weekly_points[pos][week] = sorted(weekly_points[pos][week], reverse=True)
+                weekly_points[position][week] = sorted(weekly_points[position][week], reverse=True)
 
-        return weekly_points
-
-    def calc_weekly_performance(self, players):
-        """
-        weekly_performance = {'QB': {1:  w1_points, ..., 17: w17_points}, ..
-                               'D': {1:  w1_points, ..., 17: w17_points}.
-                              }
-        """
-        weekly_points = self.weekly_points(players)
         weekly_performance = {}
-        for pos in self.starting_pos.keys():
-            weekly_performance[pos] = {}
-            # num_pos_on_roster = len(weekly_points[pos][1])
-            num_starters = self.starting_pos[pos]
+        for position in self.starting_pos.keys():
+            weekly_performance[position] = {}
+            num_starters = self.starting_pos[position]
             for week in self.weeks.keys():
-                weekly_performance[pos][week] = sum(weekly_points[pos][week][:num_starters])
+                weekly_performance[position][week] = sum(weekly_points[position][week][:num_starters])
+
         return weekly_performance
 
-    def get_team_projection(self, players):
-        """
-        Returns season points projection
-        """
-        weekly_performance = self.calc_weekly_performance(players)
-        team_projection = sum([sum(weekly_performance[pos].values()) for pos in weekly_performance.keys()])
-        return team_projection
+    def get_projection(self):
 
-    def show_weekly_performance(self, weekly_performance):
+        weekly_performance = self.calc_weekly_performance()
+        projection = sum([sum(weekly_performance[position].values()) for position in weekly_performance.keys()])
+        return projection
+
+    def show_weekly_performance(self):
+        weekly_performance = self.calc_weekly_performance()
         table = []
         for pos in ['QB', 'RB', 'WR', 'TE', 'K', 'DEF', 'D', 'DB']:
             new_row = [pos]
