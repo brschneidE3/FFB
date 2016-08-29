@@ -25,6 +25,7 @@ def read():
         csv_data = beesh.csv_to_list(data_dir, csv_name, 1, 0)
 
         for row in csv_data:
+            print row
             name, team_pos_string = row[0].rsplit('\xa0')
             team, pos_string = team_pos_string.rsplit(' - ')
 
