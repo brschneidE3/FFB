@@ -28,4 +28,4 @@ class Player:
         self.total = int(sum(self.points.values()))
 
     def __repr__(self):
-        return "%s - %s" % (self.name, self.team)
+        return "%s/%s" % (self.name[:15], self.team)

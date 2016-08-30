@@ -7,7 +7,7 @@ import copy
 import RosterClass
 
 
-top_n_to_view = 20
+top_n_to_view = 13
 players_on_team = []
 # List of (Position, Rank) denoting players on roster
 players_to_draft = [
@@ -74,7 +74,7 @@ sorted_singles = {position: sorted(single_projections[position].items(), key=ope
 
 
 table = []
-header = ['Rank', 'QB', 'RB', 'WR', 'TE', 'K', 'DEF', 'D', 'DB']
+header = ['i', 'QB', 'RB', 'WR', 'TE', 'K', 'DEF', 'D', 'DB']
 for i in range(top_n_to_view):
     new_row = [i]
     for position in header[1:]:
@@ -84,7 +84,7 @@ for i in range(top_n_to_view):
             best_projection = sorted_singles[position][0][1]
             compared_to_best = int(new_projection - best_projection)
 
-            new_row.append('%s - %s' % (compared_to_best, new_player))
+            new_row.append('%s (%s) - %s' % (int(new_projection), compared_to_best, new_player))
         except IndexError:
             new_row.append('')
     table.append(new_row)
