@@ -10,8 +10,12 @@ import RosterClass
 top_n_to_view = 13
 players_on_team = []
 # List of (Position, Rank) denoting players on roster
-players_to_draft = [('TE', 12), ('RB', 13), ('D', 38), ('WR', 23), ('DEF', 3), ('DB', 12), ('QB', 22), ('WR', 68),
-    ('RB', 46), ('K', 13), ('WR', 64), ('RB', 41), ('QB', 19), ('WR', 42), ('D', 28), ('D', 58), ('DEF', 19)]
+players_to_draft = [
+    # Drafted
+    ('TE', 12), ('RB', 13), ('D', 38), ('WR', 23), ('DEF', 3), ('DB', 12), ('QB', 22), ('WR', 68),
+    ('RB', 46), ('K', 13), ('WR', 64), ('RB', 41), ('QB', 19), ('D', 28), ('D', 58), ('DEF', 19),
+    # Acquired
+    ('WR', 25)]
 
 # List of (Position, Rank) denoting players taken off the board
 players_to_remove = [('WR', 0), ('WR', 29), ('WR', 52), ('WR', 16),
