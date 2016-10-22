@@ -3,6 +3,7 @@ __author__ = 'brsch'
 import os
 import beesh
 import TeamClass
+from operator import itemgetter
 
 data_dir = os.getcwd()
 data_file_name = 'results.csv'
@@ -62,6 +63,8 @@ for team in dict_of_teams.values():
 Xs = []
 Ys = []
 names = []
+weeks = range(1, max(team.performance.keys())+1)
+week_num = len(weeks)
 
 # Performance vs Projection
 beesh.plt.figure(1)
@@ -77,8 +80,9 @@ beesh.plt.legend(loc='lower right')
 beesh.plt.ylabel('Average Performance', size=20)
 beesh.plt.xlabel('Average Projection', size=20)
 beesh.plt.title('Performance vs. Projection by Team', size=40)
+# beesh.plt.savefig(r'Graphics\perf_v_proj_%s.png' % week_num, bbox_inches='tight')
 
-weeks = range(1, max(team.performance.keys())+1)
+
 list_of_performances = []
 weekly_avg = {i: sum(team.performance[i] for team in dict_of_teams.values())/14. for i in weeks}
 for team_name in dict_of_teams.keys():
@@ -95,11 +99,17 @@ avgs = []
 for week in weeks:
     avgs.append(weekly_avg[week])
     avgs.append(weekly_avg[week])
-ax.plot([week - 1 + 0.4645 for week in weeks] + [week + .4645 for week in weeks],
-        avgs, 'k--', label='Average')
-ax.legend(loc='lower right')
+# ax.plot([week - 1 + 0.4645 for week in weeks] + [week + .4645 for week in weeks],
+#         avgs, 'k--', label='Average')
+week_xs = []
+for week in weeks:
+    week_xs.append(week - .5)
+    week_xs.append(week + .5)
+ax.plot(week_xs, avgs, 'k--', label='Average')
+ax.legend(loc='lower left')
 beesh.plt.xlabel('Week', size=30)
 beesh.plt.ylabel('Points', size=30)
+# beesh.plt.savefig(r'Graphics\league_perf_%s' % week_num)
 
 # Individual team performances
 fig = beesh.plt.figure(3)
@@ -108,11 +118,12 @@ for team_name in dict_of_teams:
     team = dict_of_teams[team_name]
     subplot_no += 1
     fig.add_subplot(4, 4, subplot_no)
-    beesh.plt.plot(weeks, [team.performance[week] for week in weeks], 'xk-')
+    beesh.plt.plot(weeks, [team.performance[week] for week in weeks], 'ok-')
     beesh.plt.ylim(low_score - 10, high_score + 10)
     beesh.plt.xlim(0, max(weeks) + 1)
     beesh.plt.xticks(weeks)
     beesh.plt.title(team_name)
+# beesh.plt.savefig(r'Graphics\team_perf_%s' % week_num)
 
 # Variance by team
 beesh.plt.figure(4)
@@ -127,5 +138,49 @@ for team_name in dict_of_teams.keys():
 beesh.plt.xlabel('Average Performance', size=20)
 beesh.plt.ylabel('Standard Deviation', size=20)
 beesh.plt.title('Performance vs. Variance by Team', size=40)
+# beesh.plt.savefig(r'Graphics\var_by_team_%s' % week_num)
+
+strength_of_schedule_table = []
+for team in dict_of_teams.values():
+    opp_wins = 0
+    opp_losses = 0
+    opp_points = 0
+    for week in range(1, week_num+1):
+        week_opp_name = team.schedule[week]
+        week_opp = dict_of_teams[week_opp_name]
+        opp_wins += week_opp.wins
+        opp_losses += week_opp.losses
+        opp_points += sum(week_opp.performance.values())
+    team.prev_opponent_wins = opp_wins
+    team.prev_opponent_losses = opp_losses
+    team.prev_opponent_winpct = float(opp_wins)/float(opp_wins + opp_losses)
+    team.prev_opponent_points = opp_points/(week_num**2)
+
+    opp_wins = 0
+    opp_losses = 0
+    opp_points = 0
+    for week in range(week_num+1, 14):
+        week_opp_name = team.schedule[week]
+        week_opp = dict_of_teams[week_opp_name]
+        opp_wins += week_opp.wins
+        opp_losses += week_opp.losses
+        opp_points += sum(week_opp.performance.values())
+    team.remaining_opponent_wins = opp_wins
+    team.remaining_opponent_losses = opp_losses
+    team.remaining_opponent_winpct = float(opp_wins)/float(opp_wins + opp_losses)
+    team.remaining_opponent_points = opp_points/((13.-week_num)*week_num)
+
+    strength_of_schedule_table.append([team.name,
+                                       team.prev_opponent_winpct, team.prev_opponent_points,
+                                       team.remaining_opponent_winpct, team.remaining_opponent_points])
+
+# sort strength of schedule table by remaining opponent points
+sorted_sos_table = sorted(strength_of_schedule_table, key=itemgetter(4), reverse=True)
+beesh.PrintTabularResults(['Team', 'Previous Opponent Win %', 'Previous Opponent Avg Points',
+                           'Remaining Opponent Win %', 'Remaining Opponent Avg Points'],
+                          sorted_sos_table)
+
+
+
 
 beesh.plt.show()
