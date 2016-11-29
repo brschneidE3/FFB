@@ -4,66 +4,15 @@ import os
 import beesh
 import TeamClass
 from operator import itemgetter
+import itertools
 
-data_dir = os.getcwd()
-data_file_name = 'results.csv'
-data = beesh.csv_to_list(data_dir, data_file_name, 1, 0)
-
-schedule_file_name = 'schedule.csv'
-schedule_data = beesh.csv_to_list(data_dir, schedule_file_name, 1, 1)
-schedule = {}
-for i in range(1, len(schedule_data)):
-    for j in range(1, len(schedule_data[0])):
-        team_name = schedule_data[0][j]
-        week = i
-        if schedule_data[i][j] != '':
-            try:
-                schedule[team_name][week] = schedule_data[i][j]
-            except KeyError:
-                schedule[team_name] = {week: schedule_data[i][j]}
-
-
-dict_of_teams = {}
-
-high_score = 0
-low_score = 1000
-for row in data:
-    team_name = row[0]
-    data_type = row[1]
-    points = {}
-    for j in range(len(row[2:])):
-        try:
-            points[j+1] = float(row[j+2])
-        except:
-            continue
-
-    if team_name in dict_of_teams:
-        team = dict_of_teams[team_name]
-    else:
-        team = TeamClass.Team(team_name)
-        dict_of_teams[team_name] = team
-
-    if data_type == 'performance':
-        team.performance = points
-    else:
-        team.projection = points
-
-    if min(team.performance.values()) < low_score:
-        low_score = min(team.performance.values())
-    if max(team.performance.values()) > high_score:
-        high_score = max(team.performance.values())
-
-    team.schedule = schedule[team_name]
-
-for team in dict_of_teams.values():
-    team.wins, team.losses = team.calc_record(dict_of_teams)
-    team.stddev = team.calc_stddev()
+from load_data import dict_of_teams, low_score, high_score, luck_table
 
 
 Xs = []
 Ys = []
 names = []
-weeks = range(1, max(team.performance.keys())+1)
+weeks = range(1, max(dict_of_teams[dict_of_teams.keys()[0]].performance.keys())+1)
 week_num = len(weeks)
 
 # Performance vs Projection
@@ -118,7 +67,17 @@ for team_name in dict_of_teams:
     team = dict_of_teams[team_name]
     subplot_no += 1
     fig.add_subplot(4, 4, subplot_no)
-    beesh.plt.plot(weeks, [team.performance[week] for week in weeks], 'ok-')
+    markers = []
+    for week in weeks:
+        if team.record[week-1] == 1:
+            markers.append('og-')
+        else:
+            markers.append('or-')
+    markers = itertools.cycle(markers)
+    for week in weeks:
+        beesh.plt.plot(week, team.performance[week], markers.next(), linestyle='-', markersize=15)
+    beesh.plt.plot(weeks, [team.performance[week] for week in weeks], 'k-')
+
     beesh.plt.ylim(low_score - 10, high_score + 10)
     beesh.plt.xlim(0, max(weeks) + 1)
     beesh.plt.xticks(weeks)
@@ -136,7 +95,7 @@ for team_name in dict_of_teams.keys():
     beesh.plt.scatter(Xs[-1], stdevs[-1])
     beesh.plt.annotate(' %s' % team.name, xy=(Xs[-1], stdevs[-1]), size=15)
 beesh.plt.xlabel('Average Performance', size=20)
-beesh.plt.ylabel('Standard Deviation', size=20)
+beesh.plt.ylabel('<--- More Consistent   Less Consistent --->', size=20)
 beesh.plt.title('Performance vs. Variance by Team', size=40)
 # beesh.plt.savefig(r'Graphics\var_by_team_%s' % week_num)
 
@@ -180,7 +139,18 @@ beesh.PrintTabularResults(['Team', 'Previous Opponent Win %', 'Previous Opponent
                            'Remaining Opponent Win %', 'Remaining Opponent Avg Points'],
                           sorted_sos_table)
 
+sorted_luck = sorted(luck_table, key=itemgetter(3), reverse=True)
+Xs = [i for i in range(len(sorted_luck))]
+Ys = [row[3] for row in sorted_luck]
+fig, ax = beesh.plt.subplots()
+luck = ax.bar(Xs, Ys)
+for i in range(len(sorted_luck)):
+    row = sorted_luck[i]
+    beesh.plt.annotate(' %s' % row[0], xy=(i+.25, row[3]), size=20, rotation=90)
+beesh.plt.title('Wins - Expected Wins', size=20)
+beesh.plt.ylabel('Luck', size=20)
 
-
+print '\n'
+beesh.PrintTabularResults(['Team', 'Wins', 'Exp(Wins)', 'Luck'], sorted_luck)
 
 beesh.plt.show()

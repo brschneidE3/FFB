@@ -1,95 +1,42 @@
-__author__ = 'brsch'
-
-import read_data
+# import create_graphics
+from load_data import dict_of_teams
+import TeamClass
+import beesh
 import operator
-import RosterClass
 
-available_players = read_data.read()
-roster = RosterClass.Roster()
+league = TeamClass.League(dict_of_teams)
+league.get_standings()
 
-import DraftClass
-draft = DraftClass.Draft(available_players, roster)
+total_rankings = {team: {rank: 0 for rank in range(1, 15)} for team in league.dict_of_teams.keys()}
 
+N = 10000
+n = 0
+for draw in range(N):
+    add_wins, add_points = league.add_points_and_wins_forecast()
+    forecasted_standings = league.get_standings(additional_wins=add_wins, additional_points=add_points)
 
-def add_player(roster, draft, pos_to_add):
-    status = 'asking'
+    for i in range(1, 15):
+        name, wins, points = forecasted_standings[i]
+        total_rankings[name][i] += 1
 
-    while status is 'asking':
-        addable_players = sorted(draft.available_players[pos_to_add].items(), key=operator.itemgetter(1), reverse=True)
-        player_dict = {}
-        for i in range(len(addable_players)):
-            j = len(addable_players) - i - 1
-            player_dict[j] = addable_players[j][0]
-            print j, player_dict[j]
+    n += 1
+    if n % 1000 == 0:
+        print '%s simulations complete' % n
 
-        try:
-            i_player = int(raw_input('Enter number beside player to DRAFT: '))
-        except:
-            return roster, draft
+table = []
+for team in total_rankings.keys():
+    new_row = [team.replace(' ', '_')]
+    avg_rank = 0
+    for rank in range(1, league.num_teams + 1):
+        total_rankings[team][rank] = float(total_rankings[team][rank])/N
+        avg_rank += float(rank)*float(total_rankings[team][rank])
+        new_row.append(total_rankings[team][rank])
+    new_row.append(avg_rank)
+    new_row.append(str(sum(total_rankings[team][j] for j in range(1, 7))*100) + '%')
+    new_row.append(str(sum(total_rankings[team][j] for j in range(1, 3))*100) + '%')
+    table.append(new_row)
 
-        try:
-            player_to_add = player_dict[i_player]
-        except:
-            return roster, draft
-
-        confirm = raw_input('Did you mean to DRAFT %s? (y/n) ' % player_to_add)
-        if confirm == 'y':
-            status = 'adding'
-        else:
-            return roster, draft
-
-    roster.add_player(player_to_add)
-    draft.remove_available_player(player_to_add)
-    print 'Added %s to roster!' % player_to_add
-    print roster.players
-    return roster, draft
-
-
-def remove_player(roster, draft, pos_to_remove):
-    status = 'asking'
-
-    while status is 'asking':
-        removable_players = \
-            sorted(draft.available_players[pos_to_remove].items(), key=operator.itemgetter(1), reverse=True)
-        player_dict = {}
-        for i in range(len(removable_players)):
-            j = len(removable_players) - i - 1
-            player_dict[j] = removable_players[j][0]
-            print j, player_dict[j]
-
-        try:
-            i_player = int(raw_input('Enter number beside player to REMOVE: '))
-        except:
-            return roster, draft
-
-        try:
-            player_to_remove = player_dict[i_player]
-        except:
-            return roster, draft
-
-        confirm = raw_input('Did you mean to REMOVE %s? (y/n) ' % player_to_remove)
-        if confirm == 'y':
-            status = 'adding'
-        else:
-            return roster, draft
-
-    draft.remove_available_player(player_to_remove)
-    print 'Removed %s!' % player_to_remove
-    return roster, draft
-
-status = 'drafting'
-while status is 'drafting':
-
-    top_additions = draft.show_top_additions(20)
-    command = raw_input('Options: draft(POS), remove(POS), done: ')
-
-    if 'draft' in command:
-        pos_to_add = command[6:-1]
-        if pos_to_add in DraftClass.list_of_positions:
-            roster, draft = add_player(roster, draft, pos_to_add)
-    elif 'remove' in command:
-        pos_to_remove = command[7:-1]
-        if pos_to_remove in DraftClass.list_of_positions:
-            roster, draft = remove_player(roster, draft, pos_to_remove)
-    elif 'done' in command:
-        status = 'done'
+sorted_table = sorted(table, key=operator.itemgetter(15))
+headers = ['team_(N=%s)' % N] + range(1, league.num_teams + 1) + ['Avg_Rank'] + ['%_Playoffs', '%_Rd1_Bye']
+print '\n'
+beesh.PrintTabularResults(headers, sorted_table)
