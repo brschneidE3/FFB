@@ -123,6 +123,7 @@ class League:
         for team in teams:
             for week in range(self.weeks_played + 1, self.len_of_season + 1):
                 avg_points = sum(team.performance.values())/self.weeks_played
+                team.avg_points = avg_points
                 std_dev = team.stddev
 
                 opponent_name = team.schedule[week]

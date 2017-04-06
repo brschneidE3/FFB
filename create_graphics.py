@@ -126,8 +126,10 @@ for team in dict_of_teams.values():
         opp_points += sum(week_opp.performance.values())
     team.remaining_opponent_wins = opp_wins
     team.remaining_opponent_losses = opp_losses
-    team.remaining_opponent_winpct = float(opp_wins)/float(opp_wins + opp_losses)
-    team.remaining_opponent_points = opp_points/((13.-week_num)*week_num)
+    team.remaining_opponent_winpct = float(opp_wins)/float(opp_wins + opp_losses) if float(opp_wins + opp_losses) != 0 \
+        else 0
+    team.remaining_opponent_points = opp_points/((13.-week_num)*week_num) if ((13.-week_num)*week_num) != 0 \
+        else 0
 
     strength_of_schedule_table.append([team.name,
                                        team.prev_opponent_winpct, team.prev_opponent_points,

@@ -60,6 +60,7 @@ luck_table = []
 for team in dict_of_teams.values():
     team.wins, team.losses, team.record = team.calc_record(dict_of_teams)
     team.exp_wins = team.calc_exp_record(dict_of_teams)
+    team.avg_points = sum(team.performance.values())/len(team.performance.values())
     team.stddev = team.calc_stddev()
     team.luck = team.wins - team.exp_wins
     luck_table.append([team.name, team.wins, team.exp_wins, team.luck])

@@ -40,3 +40,6 @@ sorted_table = sorted(table, key=operator.itemgetter(15))
 headers = ['team_(N=%s)' % N] + range(1, league.num_teams + 1) + ['Avg_Rank'] + ['%_Playoffs', '%_Rd1_Bye']
 print '\n'
 beesh.PrintTabularResults(headers, sorted_table)
+
+for element in dict_of_teams.values():
+    print element.name, sum(element.performance.values())/len(element.performance.values())
